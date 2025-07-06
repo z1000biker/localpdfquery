@@ -32,6 +32,8 @@ Python 3.10 ή νεότερο, εγκατεστημένο το Ollama για τ�
 Τοποθετείς τα PDF αρχεία σου στον φάκελο pdfs/ και τρέχεις το script chat_with_pdfs.py.
 
 🗂 Δομή Φακέλου
+
+
 project-folder/
 ├── pdfs/                → Φάκελος με PDF έγγραφα  
 ├── chat_with_pdfs.py    → Κύριο script για συνομιλία  
