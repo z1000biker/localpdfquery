@@ -34,7 +34,7 @@ Python 3.10 ή νεότερο, εγκατεστημένο το Ollama για τ�
 🗂 Δομή Φακέλου
 
 
-project-folder/
+
 ├── pdfs/                → Φάκελος με PDF έγγραφα  
 ├── chat_with_pdfs.py    → Κύριο script για συνομιλία  
 ├── db/                  → Τοπική βάση δεδομένων embeddings  
