@@ -1,0 +1,82 @@
+ Βήμα-Βήμα Οδηγός
+ 1. Εγκατάστησε Python 3.10+
+Αν δεν το έχεις ήδη, κατέβασε το από:
+👉 https://www.python.org/downloads
+
+ 2. Εγκατάστησε το Ollama
+Το Ollama σου επιτρέπει να τρέχεις μεγάλα μοντέλα LLM τοπικά.
+
+Κατέβασε το από εδώ
+
+Μετά την εγκατάσταση, άνοιξε τερματικό και γράψε:
+
+
+ollama run mistral
+ή (πιο "έξυπνο" για ελληνικά):
+
+
+ollama run llama3
+ Αυτό θα κατεβάσει και ενεργοποιήσει τοπικά μοντέλο (μία φορά).
+🔹 3. Εγκατάσταση βιβλιοθηκών
+Δημιούργησε φάκελο π.χ. pdf_chatbot και άνοιξε ένα terminal εκεί μέσα.
+
+
+pip install langchain langchain-community chromadb pypdf unstructured sentence-transformers
+(Αν θες GUI αργότερα, μπορούμε να προσθέσουμε gradio.)
+
+ 4. Βάλε τα PDF σου σε έναν φάκελο
+π.χ. φάκελος ./pdfs με 800 βιβλία.
+
+ 5. Κώδικας Python — chat με όλα τα PDF
+Αποθήκευσε το παρακάτω ως chat_with_pdfs.py:
+
+
+import os
+from langchain_community.document_loaders import PyPDFLoader
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_community.vectorstores import Chroma
+from langchain.embeddings import HuggingFaceEmbeddings
+from langchain.chains import RetrievalQA
+from langchain_community.llms import Ollama
+
+# Φάκελος με PDF
+pdf_folder = "./pdfs"
+pdf_files = [os.path.join(pdf_folder, f) for f in os.listdir(pdf_folder) if f.endswith(".pdf")]
+
+# 1. Φόρτωση όλων των PDF
+all_docs = []
+for pdf_file in pdf_files:
+    loader = PyPDFLoader(pdf_file)
+    all_docs.extend(loader.load())
+
+# 2. Διαχωρισμός κειμένου σε μικρά τμήματα
+splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+chunks = splitter.split_documents(all_docs)
+
+# 3. Embeddings για ερωτήσεις
+embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+
+# 4. Vector DB (τοπικά)
+db = Chroma.from_documents(chunks, embedding=embeddings, persist_directory="./db")
+retriever = db.as_retriever()
+
+# 5. Τοπικό LLM με Ollama
+llm = Ollama(model="llama3")  # ή mistral, gemma κ.λπ.
+
+qa_chain = RetrievalQA.from_chain_type(llm=llm, retriever=retriever)
+
+# 6. Ερώτηση από τον χρήστη
+print(" Το σύστημα είναι έτοιμο. Κάνε ερώτηση στα ελληνικά:")
+while True:
+    q = input("\n👉 Ερώτηση: ")
+    if q.lower() in ["exit", "quit", "τέλος"]:
+        break
+    response = qa_chain.run(q)
+    print("\n📘 Απάντηση:\n", response)
+Χρήση
+Φόρτωσε τα PDF σου στο φάκελο ./pdfs
+
+Τρέξε το πρόγραμμα:
+
+
+python chat_with_pdfs.py
